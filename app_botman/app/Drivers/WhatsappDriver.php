@@ -89,9 +89,9 @@ class WhatsappDriver extends HttpDriver
         }
         
         return Answer::create($message->getText())
-            ->setValue($this->event->get('value', $message->getText()))
-            ->setMessage($message)
-            ->setInteractiveReply($interactive);
+        ->setValue($this->event->get('value', $message->getText()))
+        ->setMessage($message)
+        ->setInteractiveReply($interactive);
     }
     
     /**
@@ -143,12 +143,18 @@ class WhatsappDriver extends HttpDriver
             return [
                 'media' => false,
                 'message' => $message->getText()
-            ];            
-        } elseif (($message instanceof Image) || ($message instanceof Audio) || ($message instanceof Video) || ($message instanceof File)) {
+            ];
+        } elseif ($message instanceof Image) {
             return [
                 'media' => true,
                 'url' => $message->getUrl(),
                 'caption' => $message->getTitle()
+            ];
+        } elseif (($message instanceof Audio) || ($message instanceof Video) || ($message instanceof File)) {
+            return [
+                'media' => true,
+                'url' => $message->getUrl(),
+                'caption' => ' '
             ];
         } elseif (is_scalar($message) == true) {
             return [
@@ -179,7 +185,7 @@ class WhatsappDriver extends HttpDriver
                 'message' => $payload['message']
             ];
             
-            $url = $this->config->get('whatsbox_url') . "/sendText";            
+            $url = $this->config->get('whatsbox_url') . "/sendText";
         } else {
             $post = [
                 'number' => $number,
@@ -192,9 +198,9 @@ class WhatsappDriver extends HttpDriver
                 $post['caption'] = ' ';
             }
             
-            $url = $this->config->get('whatsbox_url') . "/sendMedia";            
+            $url = $this->config->get('whatsbox_url') . "/sendMedia";
         }
-
+        
         $response = $this->http->post($url, [], $post, $headers, true);
         
         if ($response->getStatusCode() >= 400) {
